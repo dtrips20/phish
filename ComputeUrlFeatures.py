@@ -11,7 +11,14 @@ from urllib.parse import urlparse
 import tldextract
 import whois
 from os.path import splitext
+import configparser
 
+
+cp=configparser.ConfigParser()
+cp.read("config.ini")
+stlds = cp['shady.top.level.domains']['stld']
+for s in stlds:
+    print(s)
 
 # Feature 1 : Method to count number of dots
 def countdots(url):  
@@ -27,7 +34,7 @@ def countdelim(url):
     
     return count
 
-# Is IP addr present as th hostname, let's validate
+# Feature 3 :Is IP addr present as th hostname, let's validate
 def isip(uri):
     try:
         if ip.ip_address(uri):
@@ -35,28 +42,27 @@ def isip(uri):
     except:
         return 0
     
-#method to check the presence of hyphens
+#Feature 4: method to check the presence of hyphens
 def isPresentHyphen(url):
     return url.count('-')
 
-#count number of sub-directories
+#Feature 5 : count number of sub-directories
 def countSubDir(url):
     return url.count('/')
 
+#Feature 6: Return the filename extension from url.
 def get_ext(url):
-    """Return the filename extension from url, or ''."""
-    
     root, ext = splitext(url)
     return ext
 
-#count sub domains
+#Feature 7 : count sub domains
 def countSubDomain(subdomain):
     if not subdomain:
         return 0
     else:
         return len(subdomain.split('.'))
 
-#count queries
+#Feature 8 : count queries
 def countQueries(query):
     if not query:
         return 0
@@ -64,6 +70,7 @@ def countQueries(query):
         return len(query.split('&'))
     
     
+
 
 #end of features , start saving it.
 #Create DB connection to mysql
