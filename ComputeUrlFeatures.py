@@ -65,6 +65,7 @@ def countQueries(query):
     
     
 
+#end of features , start saving it.
 #Create DB connection to mysql
 db = mysql.connector.connect(
         host="localhost",
