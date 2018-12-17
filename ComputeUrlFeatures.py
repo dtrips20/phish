@@ -77,6 +77,16 @@ def shadyTLD(suffix):
     else:
         return 0
 
+#Feature 10 : Long URL to hide the suspicious part
+#Rule 
+#        if url length <= 75 then feature is legit:
+#            else if url length > 75 then its phishing
+def isSuspiciousPartHidden(url):
+    if len(url) <= 75:
+        return 0
+    else:
+        return 1
+
 
 #end of features , start saving it.
 #Create DB connection to mysql
@@ -94,20 +104,24 @@ urlCursor = db.cursor()
 id = "1"
 urlCursor.execute("SELECT url FROM phish_urls WHERE id=1711")
 db.close()
-url = str(urlCursor.fetchone()[0])
+#url = str(urlCursor.fetchone()[0])
+url="http://www.example.com/?bar1=a&bar2=b"
 path=urlparse(url)
+print("Path :"+str(path))
 ext = tldextract.extract(url)
 
 domain = '.'.join(ext[1:])
 
 w = whois.query(domain)
-print (w.__dict__)
+#print (w.__dict__)
 
 print("Number of dots :" + str(countdots(url)))
 print("Number of delim :" + str(countdelim(url)))
 print("Is IP :" + str(isip(ext.domain)))
 print("Is hyphen present :"+str(isPresentHyphen(path.netloc)))
 print("Count sub directory :" + str(countSubDir(url)))
+print("Count queries :"+str(countQueries(path.query)))
 print(ext.suffix + " - Supicious Shady top level domain :"+ str(shadyTLD(ext.suffix)))
+print("is suspicious part hidden :"+str(isSuspiciousPartHidden(url)))
 
 
