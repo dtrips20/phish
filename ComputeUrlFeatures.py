@@ -13,6 +13,8 @@ import whois
 from os.path import splitext
 import configparser
 
+
+    
 cp=configparser.ConfigParser()
 cp.read("config.ini")
 shady_tlds = eval(cp.get("shady.top.level.domains","stld"),{},{})
@@ -101,6 +103,8 @@ def isTinyURL(url):
         return 0
     
 
+#Feature 12 : URL's having "@" symbol
+#Using @ symbol 
 
 #end of features , start saving it.
 #Create DB connection to mysql
