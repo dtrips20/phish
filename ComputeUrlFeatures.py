@@ -16,9 +16,10 @@ import configparser
 
 cp=configparser.ConfigParser()
 cp.read("config.ini")
-stlds = cp['shady.top.level.domains']['stld']
-for s in stlds:
-    print(s)
+shady_tlds = eval(cp.get("shady.top.level.domains","stld"),{},{})
+print("Following is the list of shady domains")
+print(shady_tlds)
+print("\n")
 
 # Feature 1 : Method to count number of dots
 def countdots(url):  
@@ -69,7 +70,12 @@ def countQueries(query):
     else:
         return len(query.split('&'))
     
-    
+#Feature 9 : Presense of shady domain
+def shadyTLD(suffix):
+    if suffix in shady_tlds:
+        return 1
+    else:
+        return 0
 
 
 #end of features , start saving it.
@@ -102,6 +108,6 @@ print("Number of delim :" + str(countdelim(url)))
 print("Is IP :" + str(isip(ext.domain)))
 print("Is hyphen present :"+str(isPresentHyphen(path.netloc)))
 print("Count sub directory :" + str(countSubDir(url)))
-print()
+print(ext.suffix + " - Supicious Shady top level domain :"+ str(shadyTLD(ext.suffix)))
 
 
