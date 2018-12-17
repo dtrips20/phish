@@ -13,12 +13,15 @@ import whois
 from os.path import splitext
 import configparser
 
-
 cp=configparser.ConfigParser()
 cp.read("config.ini")
 shady_tlds = eval(cp.get("shady.top.level.domains","stld"),{},{})
+shorten_url_services = eval(cp.get("list.of.shorten.url.services","surl"),{},{})
 print("Following is the list of shady domains")
 print(shady_tlds)
+print("\n")
+print("Following is the list of url shorting services")
+print(shorten_url_services)
 print("\n")
 
 # Feature 1 : Method to count number of dots
@@ -87,6 +90,17 @@ def isSuspiciousPartHidden(url):
     else:
         return 1
 
+#Feature 11 : Using URL shortening services "Tiny URL"
+#Rule
+#   if tiny url then phishing :
+#      else legitimate
+def isTinyURL(url):
+    if url in shorten_url_services:
+        return 1
+    else:
+        return 0
+    
+
 
 #end of features , start saving it.
 #Create DB connection to mysql
@@ -105,14 +119,19 @@ id = "1"
 urlCursor.execute("SELECT url FROM phish_urls WHERE id=1711")
 db.close()
 #url = str(urlCursor.fetchone()[0])
-url="http://www.example.com/?bar1=a&bar2=b"
+url="http://bit.ly/bcFOko"
+
+    
 path=urlparse(url)
 print("Path :"+str(path))
 ext = tldextract.extract(url)
 
 domain = '.'.join(ext[1:])
 
-w = whois.query(domain)
+try:
+    w = whois.query(domain)
+except:
+    print("Unknow TDL")
 #print (w.__dict__)
 
 print("Number of dots :" + str(countdots(url)))
@@ -123,5 +142,6 @@ print("Count sub directory :" + str(countSubDir(url)))
 print("Count queries :"+str(countQueries(path.query)))
 print(ext.suffix + " - Supicious Shady top level domain :"+ str(shadyTLD(ext.suffix)))
 print("is suspicious part hidden :"+str(isSuspiciousPartHidden(url)))
+print("Shorted url present :"+str(isTinyURL(path.netloc)))
 
 
