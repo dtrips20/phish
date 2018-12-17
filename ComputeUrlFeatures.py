@@ -26,7 +26,7 @@ print("Following is the list of url shorting services")
 print(shorten_url_services)
 print("\n")
 
-# Feature 1 : Method to count number of dots
+#Feature 1 : Method to count number of dots
 def countdots(url):  
     return url.count('.')
 

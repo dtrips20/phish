@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import pickle as pkl
+from pandas.io import sql
 
 
 
@@ -73,6 +74,6 @@ for i in range(len(df)):
     features = GetFeatures(df["url"].loc[i],df["label"].loc[i])
     featureSet.loc[i] = features
     
-
+sql.write_frame(df,con=db, name='table_name_for_df', if_exists='replace', flavor='mysql')
 
 
