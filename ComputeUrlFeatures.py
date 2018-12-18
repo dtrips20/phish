@@ -5,20 +5,23 @@ Created on Sat Dec 15 17:41:08 2018
 
 @author: deepaktripathi
 """
-import mysql.connector
+#import mysql.connector
 import ipaddress  as ip
 from urllib.parse import urlparse
 import tldextract
 import whois
 from os.path import splitext
-import configparser
+#import configparser
+from config import read_shady_tlds_config
+from config import read_shorten_url_services_config
 
 
     
-cp=configparser.ConfigParser()
-cp.read("config.ini")
-shady_tlds = eval(cp.get("shady.top.level.domains","stld"),{},{})
-shorten_url_services = eval(cp.get("list.of.shorten.url.services","surl"),{},{})
+#cp=configparser.ConfigParser()
+#cp.read("config.ini")
+#shady_tlds = eval(cp.get("shady.top.level.domains","stld"),{},{})
+shady_tlds = read_shady_tlds_config()
+shorten_url_services = read_shorten_url_services_config()
 print("Following is the list of shady domains")
 print(shady_tlds)
 print("\n")
@@ -107,47 +110,30 @@ def isTinyURL(url):
 #Using @ symbol 
 
 #end of features , start saving it.
-        
-
-#Create DB connection to mysql
-db = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="Dell@123",
-        database="phish"
-        
-        )
-
-#set the cursor
-urlCursor = db.cursor()
-
-id = "1"
-urlCursor.execute("SELECT url FROM phish_urls WHERE id=1711")
-db.close()
-#url = str(urlCursor.fetchone()[0])
-url="http://bit.ly/bcFOko"
-
     
-path=urlparse(url)
-print("Path :"+str(path))
-ext = tldextract.extract(url)
-
-domain = '.'.join(ext[1:])
-
-try:
-    w = whois.query(domain)
-except:
-    print("Unknow TDL")
-#print (w.__dict__)
-
-print("Number of dots :" + str(countdots(url)))
-print("Number of delim :" + str(countdelim(url)))
-print("Is IP :" + str(isip(ext.domain)))
-print("Is hyphen present :"+str(isPresentHyphen(path.netloc)))
-print("Count sub directory :" + str(countSubDir(url)))
-print("Count queries :"+str(countQueries(path.query)))
-print(ext.suffix + " - Supicious Shady top level domain :"+ str(shadyTLD(ext.suffix)))
-print("is suspicious part hidden :"+str(isSuspiciousPartHidden(url)))
-print("Shorted url present :"+str(isTinyURL(path.netloc)))
+if __name__ == '__main__':
+    
+    url="http://www.google.com"
+    path=urlparse(url)
+    print("Path :"+str(path))
+    ext = tldextract.extract(url)
+    
+    domain = '.'.join(ext[1:])
+    
+    try:
+        w = whois.query(domain)
+    except:
+        print("Unknow TDL")
+    #print (w.__dict__)
+    
+    print("Number of dots :" + str(countdots(url)))
+    print("Number of delim :" + str(countdelim(url)))
+    print("Is IP :" + str(isip(ext.domain)))
+    print("Is hyphen present :"+str(isPresentHyphen(path.netloc)))
+    print("Count sub directory :" + str(countSubDir(url)))
+    print("Count queries :"+str(countQueries(path.query)))
+    print(ext.suffix + " - Supicious Shady top level domain :"+ str(shadyTLD(ext.suffix)))
+    print("is suspicious part hidden :"+str(isSuspiciousPartHidden(url)))
+    print("Shorted url present :"+str(isTinyURL(path.netloc)))
 
 

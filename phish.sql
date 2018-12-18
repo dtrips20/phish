@@ -1,8 +1,8 @@
 use phish;
 
-SELECT count(*) FROM phish.urls where label = 0;
+SELECT * FROM phish.urls where label = 0;
 
-drop table urls;
+select * from phish.features;
 
 CREATE TABLE `urls` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -14,7 +14,18 @@ CREATE TABLE `urls` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3276 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `features` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL,
+  `url_id` bigint(20) NOT NULL,
+  `label` int(11) NOT NULL DEFAULT '0',
+  `count_dot` int(11) NOT NULL DEFAULT '0',
+  `count_delim` int(11) NOT NULL DEFAULT '0',
+  `is_ip` int(11) NOT NULL DEFAULT '0',
+  `is_hyphen_present` int(11) NOT NULL DEFAULT '0',
+  `count_sub_dit` int(11) NOT NULL DEFAULT '0',
+  `count_queries` int(11) NOT NULL DEFAULT '0',
+  `is_shady_tld` int(11) NOT NULL DEFAULT '0',
+  `is_suspicious_part_hidden` int(11) NOT NULL DEFAULT '0',
+  `is_tiny_url` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
