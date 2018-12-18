@@ -1,6 +1,6 @@
 use phish;
 
-SELECT * FROM phish.urls;
+SELECT count(*) FROM phish.urls where label = 0;
 
 drop table urls;
 

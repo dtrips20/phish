@@ -107,6 +107,8 @@ def isTinyURL(url):
 #Using @ symbol 
 
 #end of features , start saving it.
+        
+
 #Create DB connection to mysql
 db = mysql.connector.connect(
         host="localhost",

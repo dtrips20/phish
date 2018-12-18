@@ -39,6 +39,6 @@ for url in urls:
 db.commit()
 db.close()
 
-print(insertedRecords,"Record inserted")
+print("Record inserted")
 
 
