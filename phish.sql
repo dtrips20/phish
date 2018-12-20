@@ -4,6 +4,8 @@ SELECT * FROM phish.urls where label = 0;
 
 select * from phish.features;
 
+select count(*) from urls where label = 0 ;
+
 CREATE TABLE `urls` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `url` text,

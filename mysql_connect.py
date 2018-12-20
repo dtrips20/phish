@@ -25,7 +25,7 @@ class MysqlPython(object):
         return cls.__instance
     ## End def __new__
 
-  
+    #def __init__():
 
     def __open(self):
         try:
@@ -42,8 +42,9 @@ class MysqlPython(object):
         self.__connection.close()
     ## End def __close
 
+    
     def select(self, table, where=None, *args, **kwargs):
-        result = None
+       
         query = 'SELECT '
         keys = args
         values = tuple(kwargs.values())
@@ -54,25 +55,21 @@ class MysqlPython(object):
             if i < l:
                 query += ","
         ## End for keys
-
-        query += 'FROM %s' % table
+       
+        query += ' FROM %s' % table
 
         if where:
             query += " WHERE %s" % where
         ## End if where
 
         self.__open()
-        self.__session.execute(query, values)
-        number_rows = self.__session.rowcount
-        number_columns = len(self.__session.description)
-
-        if number_rows >= 1 and number_columns > 1:
-            result = [item for item in self.__session.fetchall()]
-        else:
-            result = [item[0] for item in self.__session.fetchall()]
+        
+        self.__session.execute(query,values)
+        items = self.__session.fetchall()
+        
         self.__close()
 
-        return result
+        return items
     ## End def select
 
     def update(self, table, where=None, *args, **kwargs):
@@ -151,5 +148,15 @@ class MysqlPython(object):
 
         self.__close()
         return result
+    
+
     ## End def select_advanced
 ## End class
+"""   
+if __name__=='__main__':
+    conditional_query = 'id = %s'
+
+    items = MysqlPython().select('urls', None,'url', 'id','label')
+    for item in items:
+        print(item)
+"""

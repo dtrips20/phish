@@ -18,23 +18,10 @@ import pandas as pd
 import seaborn as sns
 import pickle as pkl
 from pandas.io import sql
+from mysql_connect import MysqlPython
 
 
 
-
-#Create DB connection to mysql
-db = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="Dell@123",
-        database="phish"
-        
-        )
-
-df = pd.read_sql('SELECT * FROM phish_urls', con=db)
-db.close()
-
-print(str(range(len(df))))
 
 featureSet = pd.DataFrame(columns=("url", \
                                    "number of dots in sub-domain", \
@@ -63,17 +50,28 @@ def GetFeatures(url,label):
     result.append(len(url))
     
     #checking @ in the url    
-    #result.append(ComputeUrlFeatures.isPresentHyphenesentAt(path.netloc))
+    #result.append(ComputeUrlFeatures.isPresentHyphen(path.netloc))
     
     result.append(label)
     
     return result
 
-for i in range(len(df)):
+if __name__=='__main__':
     
-    features = GetFeatures(df["url"].loc[i],df["label"].loc[i])
-    featureSet.loc[i] = features
-    
-sql.write_frame(df,con=db, name='table_name_for_df', if_exists='replace', flavor='mysql')
+     connect_mysql = MysqlPython()
+     
+     items = connect_mysql.select('urls', None,'url','label')
+     #print(items)
+     #df = pd.DataFrame.from_records(items)
+     #print(range(len(df)))
+     #df = pd.DataFrame(items)
+     i=0
+     for item in items:
+         #print(item[0],item[1])
+         features = GetFeatures(item[0],item[1])
+         featureSet.loc[i] = features
+         i=i+1
+        
+    #sql.write_frame(df,con=db, name='table_name_for_df', if_exists='replace', flavor='mysql')
 
 

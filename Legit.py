@@ -20,7 +20,7 @@ from datetime import datetime
 from mysql_connect import MysqlPython
 
 
-phishTankLegitUrls="https://www.phishtank.com/phish_search.php?page=6&valid=n&Search=Search"
+phishTankLegitUrls="https://www.phishtank.com/phish_search.php?page=7&valid=n&Search=Search"
 
 #create a fake user agent so it looks like a real query.
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'}
