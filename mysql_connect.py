@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from mysql.connector import MySQLConnection, Error
 from collections import OrderedDict
 from config import read_db_config
+
 
 class MysqlPython(object):
     """
@@ -11,78 +9,81 @@ class MysqlPython(object):
         Extremely easy to learn and use, friendly construction.
     """
 
-    __instance   = None
-    __host       = None
-    __user       = None
-    __password   = None
-    __database   = None
-    __session    = None
+    __instance = None
+    __host = None
+    __user = None
+    __password = None
+    __database = None
+    __session = None
     __connection = None
 
     def __new__(cls, *args, **kwargs):
         if not cls.__instance or not cls.__database:
-             cls.__instance = super(MysqlPython, cls).__new__(cls,*args,**kwargs)
+            cls.__instance = super(MysqlPython, cls).__new__(cls, *args, **kwargs)
         return cls.__instance
-    ## End def __new__
 
-    #def __init__():
+    # End def __new__
+
+    # def __init__():
 
     def __open(self):
         try:
             db_config = read_db_config()
             cnx = MySQLConnection(**db_config)
             self.__connection = cnx
-            self.__session    = cnx.cursor()
+            self.__session = cnx.cursor()
         except Error as e:
-            print ("Error %d: %s" % (e.args[0],e.args[1]))
-    ## End def __open
+            print("Error %d: %s" % (e.args[0], e.args[1]))
+
+    # End def __open
 
     def __close(self):
         self.__session.close()
         self.__connection.close()
-    ## End def __close
 
-    
+    # End def __close
+
     def select(self, table, where=None, *args, **kwargs):
-       
+
         query = 'SELECT '
         keys = args
         values = tuple(kwargs.values())
         l = len(keys) - 1
 
         for i, key in enumerate(keys):
-            query += "`"+key+"`"
+            query += "`" + key + "`"
             if i < l:
                 query += ","
-        ## End for keys
-       
+        # End for keys
+
         query += ' FROM %s' % table
 
         if where:
             query += " WHERE %s" % where
-        ## End if where
+        # End if where
 
         self.__open()
-        
-        self.__session.execute(query,values)
+
+        self.__session.execute(query, values)
         items = self.__session.fetchall()
-        
+
         self.__close()
 
         return items
-    ## End def select
+
+    # End def select
 
     def update(self, table, where=None, *args, **kwargs):
-        query  = "UPDATE %s SET " % table
-        keys   = kwargs.keys()
+        query = "UPDATE %s SET " % table
+        keys = kwargs.keys()
         values = tuple(kwargs.values()) + tuple(args)
         l = len(keys) - 1
         for i, key in enumerate(keys):
-            query += "`"+key+"` = %s"
+            query += "`" + key + "` = %s"
             if i < l:
                 query += ","
-            ## End if i less than 1
-        ## End for keys
+            # End if i less than 1
+        # End for keys
         query += " WHERE %s" % where
 
         self.__open()
@@ -94,7 +95,8 @@ class MysqlPython(object):
         self.__close()
 
         return update_rows
-    ## End function update
+
+    # End function update
 
     def insert(self, table, *args, **kwargs):
         values = None
@@ -102,17 +104,19 @@ class MysqlPython(object):
         if kwargs:
             keys = kwargs.keys()
             values = tuple(kwargs.values())
-            query += "(" + ",".join(["`%s`"] * len(keys)) %  tuple (keys) + ") VALUES (" + ",".join(["%s"]*len(values)) + ")"
+            query += "(" + ",".join(["`%s`"] * len(keys)) % tuple(keys) + ") VALUES (" + ",".join(
+                ["%s"] * len(values)) + ")"
         elif args:
             values = args
-            query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
+            query += " VALUES(" + ",".join(["%s"] * len(values)) + ")"
 
         self.__open()
         self.__session.execute(query, values)
         self.__connection.commit()
         self.__close()
         return self.__session.lastrowid
-    ## End def insert
+
+    # End def insert
 
     def delete(self, table, where=None, *args):
         query = "DELETE FROM %s" % table
@@ -130,11 +134,12 @@ class MysqlPython(object):
         self.__close()
 
         return delete_rows
-    ## End def delete
+
+    # End def delete
 
     def select_advanced(self, sql, *args):
         od = OrderedDict(args)
-        query  = sql
+        query = sql
         values = tuple(od.values())
         self.__open()
         self.__session.execute(query, values)
@@ -148,10 +153,11 @@ class MysqlPython(object):
 
         self.__close()
         return result
-    
 
-    ## End def select_advanced
-## End class
+    # End def select_advanced
+
+
+# End class
 """   
 if __name__=='__main__':
     conditional_query = 'id = %s'

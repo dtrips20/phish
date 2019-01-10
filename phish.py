@@ -1,34 +1,20 @@
-import ijson
-import mysql.connector
-import urllib.request, json
-import hashlib
-from datetime import datetime
-import time
-import requests
-import feedparser
+import json
 import os
+import time
+import feedparser
+import ijson
+import requests
+import urllib.request
 
-'''
-https://pythonhosted.org/feedparser/http-etag.html
-
-ETag and Last-Modified Headers
-ETags and Last-Modified headers are two ways that feed publishers can save bandwidth, 
-but they only work if clients take advantage of them. 
-Universal Feed Parser gives you the ability to take advantage of these features, but you must use them properly.
-
-The basic concept is that a feed publisher may provide a special HTTP header, called an ETag,when it publishes a feed. 
-You should send this ETag back to the server on subsequent requests. 
-If the feed has not changed since the last time you requested it, 
-the server will return a special HTTP status code (304) and no feed data
-
-'''
-api_key = '9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb'
+api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
+url = 'http://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
 
 
 def parse_json():
+
     cnt = 0
     t0 = time.time()
-    with open('C:/Users/dtrips/Downloads/verified_online.json/verified_online.json', 'r')  as f:
+    with open('C:/Users/dtrips/Downloads/verified_online.json/verified_online.json', 'r') as f:
         parse = ijson.parse(f)
         for prefix, event, value in parse:
             if prefix == 'item.url':
@@ -42,8 +28,7 @@ def parse_json():
     print(t0 - t1)
 
 
-def etag_changed_in_header():
-    url = 'http://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
+def etag_changed():
 
     file_name = os.path.join(os.getcwd(), 'etag.txt')
     print(file_name)
@@ -59,15 +44,16 @@ def etag_changed_in_header():
             contents = f.read()
             print(contents)
             f.close()
-            resq = requests.head(url)
-            print(resq.headers['Location'])
-            cloud_url = resq.headers['Location']
-            resq = requests.head(cloud_url)
-            print(resq.headers['ETag'])
+            request = requests.head(url)
+            print(request.headers['Location'])
+            cloud_url = request.headers['Location']
+            cloud_request = requests.head(cloud_url)
+            print(cloud_request.headers)
+            print(cloud_request.headers['ETag'])
             f = open(file_name, 'w+')
-            f.write(resq.headers['ETag'])
+            f.write(cloud_request.headers['ETag'])
             f.close()
-            if contents == resq.headers['ETag']:
+            if contents == cloud_request.headers['ETag']:
                 return False
             else:
                 return True
@@ -80,6 +66,29 @@ def etag_changed_in_header():
         f.close()
 
 
+def download_bz_file():
+
+    file_name = url.split('/')[-1]
+    u = urllib.request.urlretrieve(url, 'online-valid.json.bz2')
+    f = open(file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print("Downloading: %s Bytes: %s" % (file_name, file_size))
+
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8) * (len(status) + 1)
+        print(status,)
+
+    f.close()
 # resp = requests.head(url)
 # print (resp.history , resp.text, resp.headers)
 
@@ -117,8 +126,8 @@ db.close()
 print("Record inserted")
 '''
 if __name__ == '__main__':
-
-    if etag_changed_in_header():
+    download_bz_file()
+    if etag_changed():
         print("ETag has changed")
         print("Parse the JSON")
     else:
