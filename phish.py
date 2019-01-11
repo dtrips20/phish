@@ -6,6 +6,7 @@ import requests
 import urllib.request
 import shutil
 import bz2
+from mysql_connect import MysqlPython
 
 api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
 url = 'http://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
@@ -90,6 +91,20 @@ def download_bz_file_and_decompress(cloud_url):
     return new_file_path
 
 
+def select_mysql(sha256):
+
+    conditional_query = 'sha256 = %s'
+    connect_mysql = MysqlPython()
+    items = connect_mysql.select("urls", conditional_query, "id", sha256=sha256)
+    if items:
+        print("Don't insert the values")
+    else:
+        print("insert the values")
+
+    for i in items:
+        print(i)
+
+
 
 '''
 db = mysql.connector.connect(
@@ -124,7 +139,9 @@ db.close()
 print("Record inserted")
 '''
 if __name__ == '__main__':
+    select_mysql('5023b88b8b8a030225dfe4cce9fd58e25b1f2d82b1b6c4abfdf7c4b220b7fd')
 
+'''
     cloud_url_loc, etag_has_changed = etag_changed()
 
     if etag_has_changed:
@@ -133,3 +150,5 @@ if __name__ == '__main__':
         parse_json(new_file)
     else:
         print("Dont parse the json as ETag has not changed")
+
+'''
