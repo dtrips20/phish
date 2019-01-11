@@ -1,3 +1,12 @@
+"""
+Created on Sat Dec 15 21:00:42 2018
+
+@author: Deepak Tripathi
+
+Load PhishTank feed in DB.
+
+"""
+
 import os
 import time
 import feedparser
