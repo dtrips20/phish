@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Sat Dec 15 21:00:42 2018
 
-@author: deepaktripathi
+@author: Deepak Tripathi
 
-This module will load verified non-phish site for traning.
+This module will load verified non-phish site for training.
 We may need to find another way to get verified non-phish site.
 For prototype this could be good.
 
@@ -20,10 +18,11 @@ from datetime import datetime
 from mysql_connect import MysqlPython
 
 
-phishTankLegitUrls="https://www.phishtank.com/phish_search.php?page=7&valid=n&Search=Search"
+phishTankLegitUrls="https://www.phishtank.com/phish_search.php?page=4&valid=n&Search=Search"
 
-#create a fake user agent so it looks like a real query.
-headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'}
+# create a fake user agent so it looks like a real query.
+headers = {'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) "
+                         "Chrome/61.0.3163.100 Safari/537.36"}
 
 
 def simple_get(url):
@@ -33,6 +32,7 @@ def simple_get(url):
     text content, otherwise return None.
     """
     try:
+
         with closing(get(url,headers=headers, stream=True)) as resp:
             if is_good_response(resp):
                 return resp.content
@@ -42,7 +42,8 @@ def simple_get(url):
     except RequestException as e:
         log_error('Error during requests to {0} : {1}'.format(url, str(e)))
         return None
-    
+
+
 def is_good_response(resp):
     """
     Returns True if the response seems to be HTML, False otherwise.
@@ -51,7 +52,8 @@ def is_good_response(resp):
     return (resp.status_code == 200 
             and content_type is not None 
             and content_type.find('html') > -1)
-    
+
+
 def log_error(e):
     """
     It is always a good idea to log errors. 
@@ -69,7 +71,6 @@ if __name__ == "__main__":
     insertedRecords = 0 
     sql = "INSERT into urls (url,sha256 , label , added_date) values ( %s , %s, %s, %s)"
 
-    
     for a in html.select('a'):
         if "phish_detail.php"  in a['href']:
             #print(a['href'])
@@ -80,9 +81,4 @@ if __name__ == "__main__":
                     url = a['href']
                     m = hashlib.sha256(url.encode())
                     connect_mysql.insert('urls',url=url,sha256=m.hexdigest(),label=0,added_date=datetime.utcnow())
-
-    print("Record inserted")
-                    
-            
-            
-    
+print("Record inserted")
