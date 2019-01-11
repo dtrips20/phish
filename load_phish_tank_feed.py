@@ -16,27 +16,11 @@ import urllib.request
 import shutil
 import bz2
 from mysql_connect import MysqlPython
+import datetime
+import hashlib
 
 api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
 url = 'http://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
-
-
-def parse_json(file_name):
-
-    cnt = 0
-    t0 = time.time()
-    with open(file_name, 'r') as f:
-        parse = ijson.parse(f)
-        for prefix, event, value in parse:
-            if prefix == 'item.url':
-                # print('prefix={}, event={}, value={}'.format(prefix, event, value))
-                url = value
-                # m=hashlib.sha256(url.encode())
-                print(url)#, m.hexdigest())
-                cnt = cnt + 1
-    t1 = time.time()
-    print(cnt)
-    print(t1 - t0)
 
 
 def etag_changed():
@@ -90,7 +74,7 @@ def download_bz_file_and_decompress(cloud_url):
     stat_info = os.stat(file_name)
 
     if stat_info.st_size > 0:
-        print(stat_info.st_size)
+        # print(stat_info.st_size)
         # unzip the json feed
         zipfile = bz2.BZ2File(file_name)  # open the file
         data = zipfile.read()  # get the decompressed data
@@ -100,64 +84,47 @@ def download_bz_file_and_decompress(cloud_url):
     return new_file_path
 
 
-def select_mysql(sha256):
+def parse_json_save_urls(file_name):
+
+    total_record = 0
+    record_inserted = 0
+    record_found = 0
+    t0 = time.time()
+    with open(file_name, 'r') as f:
+        parse = ijson.parse(f)
+        for prefix, event, value in parse:
+            if prefix == 'item.url':
+                # print('prefix={}, event={}, value={}'.format(prefix, event, value))
+                m = hashlib.sha256(url.encode())
+                save_to_db(value, m.hexdigest(), 1, record_inserted, record_found)
+                total_record += 1
+    t1 = time.time()
+    print("Total Records :", total_record)
+    print("Time elapsed in sec ", t1 - t0)
+    print("Record Inserted ", record_inserted)
+    print("Record already found ", record_found)
+
+
+def save_to_db(url_value, sha256,label, record_inserted, record_found):
 
     conditional_query = 'sha256 = %s'
     connect_mysql = MysqlPython()
     items = connect_mysql.select("urls", conditional_query, "id", sha256=sha256)
     if items:
         print("Don't insert the values")
+        record_found += 1
     else:
         print("insert the values")
-
-    for i in items:
-        print(i)
+        record_inserted += 1
 
 
-
-'''
-db = mysql.connector.connect(
-        host="192.168.1.4",
-        user="root",
-
-        passwd="Dell@123",
-        database="phish"
-        
-        )
-
-urlCursor = db.cursor()
-insertedRecords = 0 
-sql = "INSERT into urls (url,sha256 , label , added_date) values ( %s , %s, %s, %s)"
-
-'''
-
-#value = json.loads(open("C:/Users/dtrips/Downloads/verified_online.json/verified_online.json").read())
-
-'''
-for url in urls:
-    # print(url)
-    m = hashlib.sha256(url.encode())
-    # print(m.hexdigest())
-    val = (url,m.hexdigest(),1,datetime.utcnow())
-    urlCursor.execute(sql,val)
-    insertedRecords= insertedRecords + urlCursor.rowcount
-    
-db.commit()
-db.close()
-
-print("Record inserted")
-'''
 if __name__ == '__main__':
-    select_mysql('5023b88b8b8a030225dfe4cce9fd58e25b1f2d82b1b6c4abfdf7c4b220b7fd')
 
-'''
     cloud_url_loc, etag_has_changed = etag_changed()
 
     if etag_has_changed:
         print("ETag has changed")
         new_file = download_bz_file_and_decompress(cloud_url_loc)
-        parse_json(new_file)
+        parse_json_save_urls(new_file)
     else:
         print("Dont parse the json as ETag has not changed")
-
-'''
