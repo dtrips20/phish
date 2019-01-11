@@ -20,7 +20,7 @@ import datetime
 import hashlib
 
 api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
-url = 'http://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
+url = 'https://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
 
 
 def etag_changed():
@@ -95,8 +95,8 @@ def parse_json_save_urls(file_name):
         for prefix, event, value in parse:
             if prefix == 'item.url':
                 # print('prefix={}, event={}, value={}'.format(prefix, event, value))
-                m = hashlib.sha256(url.encode())
-                save_to_db(value, m.hexdigest(), 1, record_inserted, record_found)
+                m = hashlib.sha256(value.encode())
+                save_to_db(value, m.hexdigest(), record_inserted, record_found)
                 total_record += 1
     t1 = time.time()
     print("Total Records :", total_record)
@@ -105,16 +105,17 @@ def parse_json_save_urls(file_name):
     print("Record already found ", record_found)
 
 
-def save_to_db(url_value, sha256,label, record_inserted, record_found):
+def save_to_db(url_value, sha256, record_inserted, record_found):
 
     conditional_query = 'sha256 = %s'
     connect_mysql = MysqlPython()
     items = connect_mysql.select("urls", conditional_query, "id", sha256=sha256)
     if items:
-        print("Don't insert the values")
+        print("Don't insert the values ", sha256)
         record_found += 1
     else:
-        print("insert the values")
+        # print("insert the values")
+        connect_mysql.insert("urls", url=url_value, sha256=sha256, label=1, added_date=datetime.datetime.utcnow())
         record_inserted += 1
 
 
