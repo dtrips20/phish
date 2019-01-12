@@ -6,7 +6,7 @@ Created on Sat Dec 15 21:00:42 2018
 Load PhishTank feed in DB.
 
 """
-
+# TODO:'Write the ETag changes after the update in DB is complete so that we can run the prog again incase of failure.'
 import os
 import time
 import feedparser
