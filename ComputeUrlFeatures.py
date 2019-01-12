@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Sat Dec 15 17:41:08 2018
 
 @author: deepak tripathi
+
 """
 # import mysql.connector
 import ipaddress as ip
@@ -11,7 +10,6 @@ from urllib.parse import urlparse
 import tldextract
 import whois
 from os.path import splitext
-# import configparser
 from config import read_shady_tlds_config
 from config import read_shorten_url_services_config
 
@@ -29,12 +27,12 @@ print("\n")
 
 
 # Feature 1 : Method to count number of dots
-def countdots(url):
+def count_dots(url):
     return url.count('.')
 
 
 # Feature 2 : Method to count number of delimeters
-def countdelim(url):
+def count_delim(url):
     count = 0
     delim = [';', '_', '?', '=', '&']
     for each in url:
@@ -45,7 +43,7 @@ def countdelim(url):
 
 
 # Feature 3 :Is IP addr present as th hostname, let's validate
-def isip(uri):
+def is_ip(uri):
     try:
         if ip.ip_address(uri):
             return 1
@@ -54,12 +52,12 @@ def isip(uri):
 
 
 # Feature 4: method to check the presence of hyphens
-def isPresentHyphen(url):
+def is_present_hyphen(url):
     return url.count('-')
 
 
 # Feature 5 : count number of sub-directories
-def countSubDir(url):
+def count_sub_dir(url):
     return url.count('/')
 
 
@@ -70,7 +68,7 @@ def get_ext(url):
 
 
 # Feature 7 : count sub domains
-def countSubDomain(subdomain):
+def count_sub_domain(subdomain):
     if not subdomain:
         return 0
     else:
@@ -78,7 +76,7 @@ def countSubDomain(subdomain):
 
 
 # Feature 8 : count queries
-def countQueries(query):
+def count_queries(query):
     if not query:
         return 0
     else:
@@ -86,7 +84,7 @@ def countQueries(query):
 
 
 # Feature 9 : Presense of shady domain
-def shadyTLD(suffix):
+def shady_tld(suffix):
     if suffix in shady_tlds:
         return 1
     else:
@@ -97,7 +95,7 @@ def shadyTLD(suffix):
 # Rule
 #        if url length <= 75 then feature is legit:
 #            else if url length > 75 then its phishing
-def isSuspiciousPartHidden(url):
+def is_suspicious_part_hidden(url):
     if len(url) <= 75:
         return 0
     else:
@@ -108,7 +106,7 @@ def isSuspiciousPartHidden(url):
 # Rule
 #   if tiny url then phishing :
 #      else legitimate
-def isTinyURL(url):
+def is_tiny_url(url):
     if url in shorten_url_services:
         return 1
     else:
