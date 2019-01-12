@@ -96,8 +96,12 @@ def parse_json_save_urls(file_name):
             if prefix == 'item.url':
                 # print('prefix={}, event={}, value={}'.format(prefix, event, value))
                 m = hashlib.sha256(value.encode())
-                save_to_db(value, m.hexdigest(), record_inserted, record_found)
+                found, inserted = save_to_db(value, m.hexdigest())
                 total_record += 1
+                if found:
+                    record_found += 1
+                if inserted:
+                    record_inserted += 1
     t1 = time.time()
     print("Total Records :", total_record)
     print("Time elapsed in sec ", t1 - t0)
@@ -105,18 +109,22 @@ def parse_json_save_urls(file_name):
     print("Record already found ", record_found)
 
 
-def save_to_db(url_value, sha256, record_inserted, record_found):
+def save_to_db(url_value, sha256):
 
+    found = False
+    inserted = False
     conditional_query = 'sha256 = %s'
     connect_mysql = MysqlPython()
     items = connect_mysql.select("urls", conditional_query, "id", sha256=sha256)
     if items:
         print("Don't insert the values ", sha256)
-        record_found += 1
+        found = True
     else:
         # print("insert the values")
         connect_mysql.insert("urls", url=url_value, sha256=sha256, label=1, added_date=datetime.datetime.utcnow())
-        record_inserted += 1
+        inserted = True
+
+    return found, inserted
 
 
 if __name__ == '__main__':
