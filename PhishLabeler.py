@@ -22,7 +22,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
-from ComputeUrlFeatures import countdots, isPresentHyphen, shadyTLD
+from lexical_features import countdots, isPresentHyphen, shadyTLD
 
 db = mysql.connector.connect(
     host="192.168.1.4",

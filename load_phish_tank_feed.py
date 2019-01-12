@@ -127,7 +127,7 @@ def save_to_db(url_value, sha256):
     return found, inserted
 
 
-if __name__ == '__main__':
+def main():
 
     cloud_url_loc, etag_has_changed = etag_changed()
 
@@ -137,3 +137,7 @@ if __name__ == '__main__':
         parse_json_save_urls(new_file)
     else:
         print("Dont parse the json as ETag has not changed")
+
+
+if __name__ == '__main__':
+    main()
