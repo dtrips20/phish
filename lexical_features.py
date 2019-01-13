@@ -50,7 +50,7 @@ class LexFeature:
             return 0
 
     # Feature 4: method to check the presence of hyphens
-    def is_present_hyphen(self):
+    def is_hyphen_present(self):
         return self._url_to_compute.count('-')
 
     # Feature 5: count number of sub-directories
