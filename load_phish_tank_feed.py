@@ -18,13 +18,13 @@ import bz2
 from mysql_connect import MysqlPython
 import datetime
 import hashlib
+import labeler
 
 api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
 url = 'https://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
 
 
 def etag_changed():
-
     file_name = os.path.join(os.getcwd(), 'etag.txt')
 
     if not os.path.exists(file_name):
@@ -64,7 +64,6 @@ def etag_changed():
 
 
 def download_bz_file_and_decompress(cloud_url):
-
     new_file_path = ''
     file_name = (cloud_url.split('/')[-1]).split('?')[0]
     # u = urllib.request.urlretrieve(url, file_name)
@@ -85,7 +84,6 @@ def download_bz_file_and_decompress(cloud_url):
 
 
 def parse_json_save_urls(file_name):
-
     total_record = 0
     record_inserted = 0
     record_found = 0
@@ -97,6 +95,7 @@ def parse_json_save_urls(file_name):
                 # print('prefix={}, event={}, value={}'.format(prefix, event, value))
                 m = hashlib.sha256(value.encode())
                 found, inserted = save_to_db(value, m.hexdigest())
+                labeler.save_features(value, m.hexdigest(), 1)
                 total_record += 1
                 if found:
                     record_found += 1
@@ -110,7 +109,6 @@ def parse_json_save_urls(file_name):
 
 
 def save_to_db(url_value, sha256):
-
     found = False
     inserted = False
     conditional_query = 'sha256 = %s'
@@ -128,7 +126,6 @@ def save_to_db(url_value, sha256):
 
 
 def main():
-
     cloud_url_loc, etag_has_changed = etag_changed()
 
     if etag_has_changed:
@@ -141,3 +138,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # parse_json_save_urls('verified_online.json')
+

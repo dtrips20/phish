@@ -49,13 +49,15 @@ class LexFeature:
         except Exception as e:
             return 0
 
-    # Feature 4: method to check the presence of hyphens
+    # Feature 4: method to check the presence of hyphens in domain
     def is_hyphen_present(self):
-        return self._url_to_compute.count('-')
+        path = urlparse(self._url_to_compute)
+        return path.netloc.count('-')
 
     # Feature 5: count number of sub-directories
     def count_sub_dir(self):
-        return self._url_to_compute.count('/')
+        path = urlparse(self._url_to_compute)
+        return path.path.count('/')
 
     # Feature 6: count sub domains
     def count_sub_domain(self):

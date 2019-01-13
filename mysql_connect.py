@@ -43,6 +43,14 @@ class MysqlPython(object):
 
     # End def __close
 
+    def get_connection(self):
+        try:
+            db_config = read_db_config()
+            cnx = MySQLConnection(**db_config)
+        except Error as e:
+            print("Error %d: %s" % (e.args[0], e.args[1]))
+        return cnx
+
     def select(self, table, where=None, *args, **kwargs):
 
         query = 'SELECT '

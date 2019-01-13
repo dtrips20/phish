@@ -65,7 +65,7 @@ def log_error(e):
 
 if __name__ == "__main__":
     raw_html = simple_get(phishTankLegitUrls)
-    #print("Length of raw html " + str(len(raw_html)))
+    # print("Length of raw html " + str(len(raw_html)))
     html = BeautifulSoup(raw_html, 'html.parser')
     connect_mysql = MysqlPython()
     insertedRecords = 0 
@@ -80,5 +80,5 @@ if __name__ == "__main__":
                 if 'visit the site' in a.text:
                     url = a['href']
                     m = hashlib.sha256(url.encode())
-                    connect_mysql.insert('urls',url=url,sha256=m.hexdigest(),label=0,added_date=datetime.utcnow())
+                    connect_mysql.insert('urls',url=url, source='Legit',sha256=m.hexdigest(),label=0,added_date=datetime.utcnow())
 print("Record inserted")

@@ -12,16 +12,17 @@ CREATE TABLE `urls` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3276 DEFAULT CHARSET=utf8mb4 ;
 
 CREATE TABLE `features` (
-  `id` int(11) NOT NULL,
-  `url_id` bigint(20) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sha256` char(64) NOT NULL,
   `label` int(11) NOT NULL DEFAULT '0',
-  `count_dot` int(11) NOT NULL DEFAULT '0',
-  `count_delim` int(11) NOT NULL DEFAULT '0',
-  `is_ip` int(11) NOT NULL DEFAULT '0',
+  `count_dots` int(11) NOT NULL DEFAULT '0',
+  `count_delimiters` int(11) NOT NULL DEFAULT '0',
+  `is_domain_ip` int(11) NOT NULL DEFAULT '0',
   `is_hyphen_present` int(11) NOT NULL DEFAULT '0',
-  `count_sub_dit` int(11) NOT NULL DEFAULT '0',
+  `count_sub_dir` int(11) NOT NULL DEFAULT '0',
+  `count_sub_domain` int(11) NOT NULL DEFAULT '0',
   `count_queries` int(11) NOT NULL DEFAULT '0',
-  `is_shady_tld` int(11) NOT NULL DEFAULT '0',
+  `shady_tld` int(11) NOT NULL DEFAULT '0',
   `is_suspicious_part_hidden` int(11) NOT NULL DEFAULT '0',
   `is_tiny_url` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
