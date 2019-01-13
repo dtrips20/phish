@@ -95,7 +95,6 @@ def parse_json_save_urls(file_name):
                 # print('prefix={}, event={}, value={}'.format(prefix, event, value))
                 m = hashlib.sha256(value.encode())
                 found, inserted = save_to_db(value, m.hexdigest())
-                labeler.save_features(value, m.hexdigest(), 1)
                 total_record += 1
                 if found:
                     record_found += 1
@@ -120,6 +119,7 @@ def save_to_db(url_value, sha256):
     else:
         # print("insert the values")
         connect_mysql.insert("urls", url=url_value, sha256=sha256, source='PhishTank', label=1, added_date=datetime.datetime.utcnow())
+        labeler.save_features(url_value, sha256, 1)
         inserted = True
 
     return found, inserted
