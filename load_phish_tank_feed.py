@@ -119,7 +119,7 @@ def save_to_db(url_value, sha256):
         found = True
     else:
         # print("insert the values")
-        connect_mysql.insert("urls", url=url_value, sha256=sha256, label=1, added_date=datetime.datetime.utcnow())
+        connect_mysql.insert("urls", url=url_value, sha256=sha256, source='PhishTank', label=1, added_date=datetime.datetime.utcnow())
         inserted = True
 
     return found, inserted
