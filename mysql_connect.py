@@ -14,7 +14,7 @@ class MysqlPython(object):
     __user = None
     __password = None
     __database = None
-    __session = None
+    __cursor = None
     __connection = None
 
     def __new__(cls, *args, **kwargs):
@@ -31,14 +31,14 @@ class MysqlPython(object):
             db_config = read_db_config()
             cnx = MySQLConnection(**db_config)
             self.__connection = cnx
-            self.__session = cnx.cursor()
+            self.__cursor = cnx.cursor()
         except Error as e:
             print("Error %d: %s" % (e.args[0], e.args[1]))
 
     # End def __open
 
     def __close(self):
-        self.__session.close()
+        self.__cursor.close()
         self.__connection.close()
 
     # End def __close
@@ -46,10 +46,10 @@ class MysqlPython(object):
     def get_connection(self):
         try:
             db_config = read_db_config()
-            cnx = MySQLConnection(**db_config)
+            self.__connection = MySQLConnection(**db_config)
         except Error as e:
             print("Error %d: %s" % (e.args[0], e.args[1]))
-        return cnx
+        return  self.__connection
 
     def select(self, table, where=None, *args, **kwargs):
 
@@ -72,8 +72,8 @@ class MysqlPython(object):
 
         self.__open()
 
-        self.__session.execute(query, values)
-        items = self.__session.fetchall()
+        self.__cursor.execute(query, values)
+        items = self.__cursor.fetchall()
 
         self.__close()
 
@@ -95,11 +95,11 @@ class MysqlPython(object):
         query += " WHERE %s" % where
 
         self.__open()
-        self.__session.execute(query, values)
+        self.__cursor.execute(query, values)
         self.__connection.commit()
 
         # Obtain rows affected
-        update_rows = self.__session.rowcount
+        update_rows = self.__cursor.rowcount
         self.__close()
 
         return update_rows
@@ -119,10 +119,10 @@ class MysqlPython(object):
             query += " VALUES(" + ",".join(["%s"] * len(values)) + ")"
 
         self.__open()
-        self.__session.execute(query, values)
+        self.__cursor.execute(query, values)
         self.__connection.commit()
         self.__close()
-        return self.__session.lastrowid
+        return self.__cursor.lastrowid
 
     # End def insert
 
@@ -134,11 +134,11 @@ class MysqlPython(object):
         values = tuple(args)
 
         self.__open()
-        self.__session.execute(query, values)
+        self.__cursor.execute(query, values)
         self.__connection.commit()
 
         # Obtain rows affected
-        delete_rows = self.__session.rowcount
+        delete_rows = self.__cursor.rowcount
         self.__close()
 
         return delete_rows
@@ -150,14 +150,15 @@ class MysqlPython(object):
         query = sql
         values = tuple(od.values())
         self.__open()
-        self.__session.execute(query, values)
-        number_rows = self.__session.rowcount
-        number_columns = len(self.__session.description)
+        self.__cursor.execute(query, values)
+        items = self.__cursor.fetchall()
+        number_rows = self.__cursor.rowcount
+        number_columns = len(self.__cursor.description)
 
         if number_rows >= 1 and number_columns > 1:
-            result = [item for item in self.__session.fetchall()]
+            result = [item for item in items]
         else:
-            result = [item[0] for item in self.__session.fetchall()]
+            result = [item[0] for item in items]
 
         self.__close()
         return result
@@ -166,11 +167,4 @@ class MysqlPython(object):
 
 
 # End class
-"""   
-if __name__=='__main__':
-    conditional_query = 'id = %s'
 
-    items = MysqlPython().select('urls', None,'url', 'id','label')
-    for item in items:
-        print(item)
-"""
