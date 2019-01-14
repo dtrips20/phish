@@ -8,13 +8,11 @@ Created on Sat Dec 15 17:41:08 2018
 import ipaddress as ip
 from urllib.parse import urlparse
 import tldextract
-# import whois
-# from os.path import splitext
 from config import read_shady_tlds_config
 from config import read_shorten_url_services_config
 
 
-class LexFeature:
+class Feature:
     _url_to_compute = None
     _shady_tlds = None
     _shorten_url_services = None

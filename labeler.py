@@ -5,7 +5,7 @@ Created on Sun Dec 16 19:35:03 2018
 
 This will create feature set with label
 """
-from lexical_features import LexFeature
+from feature_address import Feature
 from mysql_connect import MysqlPython
 
 # columns
@@ -24,7 +24,7 @@ columns = ['sha256',
 
 
 def save_features(url, sha256, label):
-    feature = LexFeature(url)
+    feature = Feature(url)
     # return_id = None
     result = list()
 

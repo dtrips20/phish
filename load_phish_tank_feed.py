@@ -118,7 +118,8 @@ def save_to_db(url_value, sha256):
         found = True
     else:
         # print("insert the values")
-        connect_mysql.insert("urls", url=url_value, sha256=sha256, source='PhishTank', label=1, added_date=datetime.datetime.utcnow())
+        connect_mysql.insert("urls", url=url_value, sha256=sha256, source='PhishTank', label=1,
+                             added_date=datetime.datetime.utcnow())
         labeler.save_features(url_value, sha256, 1)
         inserted = True
 
@@ -139,4 +140,3 @@ def main():
 if __name__ == '__main__':
     main()
     # parse_json_save_urls('verified_online.json')
-
