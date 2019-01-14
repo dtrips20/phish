@@ -18,7 +18,7 @@ from datetime import datetime
 from mysql_connect import MysqlPython
 import labeler
 
-phishTankLegitUrls = "https://www.phishtank.com/phish_search.php?page=1&valid=n&Search=Search"
+phishTankLegitUrls = "https://www.phishtank.com/phish_search.php?page=26&valid=n&Search=Search"
 
 # create a fake user agent so it looks like a real query.
 headers = {'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -89,4 +89,5 @@ if __name__ == "__main__":
                         connect_mysql.insert('urls', url=url, source='Legit', sha256=m.hexdigest(), label=0,
                                              added_date=datetime.utcnow())
                         labeler.save_features(url, m.hexdigest(), 0)
-print("Record inserted")
+                        print("Data inserted ", m.hexdigest())
+
