@@ -2,14 +2,16 @@ use phish;
 
 
 CREATE TABLE `urls` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `url` text,
-  `sha256` char(64) DEFAULT NULL,
-  `source` char(200) DEFAULT NULL,
-  `label` int(11) DEFAULT NULL,
-  `added_date` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3276 DEFAULT CHARSET=utf8mb4 ;
+	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+	`url` TEXT NOT NULL,
+	`sha256` CHAR(64) NOT NULL,
+	`source` CHAR(200) NOT NULL,
+	`label` INT(11) NOT NULL,
+	`added_date` DATETIME NOT NULL,
+	`html` TEXT NOT NULL,
+	`html_sha256` CHAR(64) NOT NULL,
+   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 CREATE TABLE `features` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
