@@ -18,7 +18,7 @@ from datetime import datetime
 from mysql_connect import MysqlPython
 import labeler
 
-phishTankLegitUrls = "https://www.phishtank.com/phish_search.php?page=26&valid=n&Search=Search"
+phishTankLegitUrls = "https://www.phishtank.com/phish_search.php?page=2&valid=n&Search=Search"
 
 # create a fake user agent so it looks like a real query.
 headers = {'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) "

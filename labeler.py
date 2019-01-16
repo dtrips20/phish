@@ -5,13 +5,14 @@ Created on Sun Dec 16 19:35:03 2018
 
 This will create feature set with label
 """
-from feature_address import Feature
+
+import feature_address as lexical
 from mysql_connect import MysqlPython
+import feature_html_js as html
 
 # columns
 columns = ['sha256',
-           'label',
-           'count_dots',
+           'label', 'count_dots',
            'count_delimiters',
            'is_domain_ip',
            'is_hyphen_present',
@@ -24,22 +25,26 @@ columns = ['sha256',
 
 
 def save_features(url, sha256, label):
-    feature = Feature(url)
+    l_feature = lexical.Feature(url)
+    h_feature = html.Feature(url)
+
     # return_id = None
     result = list()
 
     result.append(sha256)
     result.append(label)
-    result.append(feature.count_dots())
-    result.append(feature.count_delimiters())
-    result.append(feature.is_domain_ip())
-    result.append(feature.is_hyphen_present())
-    result.append(feature.count_sub_dir())
-    result.append(feature.count_sub_domain())
-    result.append(feature.count_queries())
-    result.append(feature.shady_tld())
-    result.append(feature.is_suspicious_part_hidden())
-    result.append(feature.is_tiny_url())
+    result.append(l_feature.count_dots())
+    result.append(l_feature.count_delimiters())
+    result.append(l_feature.is_domain_ip())
+    result.append(l_feature.is_hyphen_present())
+    result.append(l_feature.count_sub_dir())
+    result.append(l_feature.count_sub_domain())
+    result.append(l_feature.count_queries())
+    result.append(l_feature.shady_tld())
+    result.append(l_feature.is_suspicious_part_hidden())
+    result.append(l_feature.is_tiny_url())
+    # Append HTML based features
+    result.append(h_feature.anchor_in_url())
 
     connect_mysql = MysqlPython()
     conditional_query = 'sha256 = %s'
@@ -56,7 +61,8 @@ def save_features(url, sha256, label):
                                          count_queries=result[8],
                                          shady_tld=result[9],
                                          is_suspicious_part_hidden=result[10],
-                                         is_tiny_url=result[11]
+                                         is_tiny_url=result[11],
+                                         anchor_in_url=result[12]
                                          )
     else:
         return_id = connect_mysql.insert('features',
@@ -71,6 +77,7 @@ def save_features(url, sha256, label):
                                          count_queries=result[8],
                                          shady_tld=result[9],
                                          is_suspicious_part_hidden=result[10],
-                                         is_tiny_url=result[11]
+                                         is_tiny_url=result[11],
+                                         anchor_in_url=result[12]
                                          )
     return return_id

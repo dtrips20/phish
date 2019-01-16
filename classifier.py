@@ -12,14 +12,14 @@ print("Dataset Length :", len(balance_data))
 
 balance_data.head()
 
-X = balance_data.values[:, 2:12]
-# print(X)
+X = balance_data.values[:, 1:13]
+print(X)
 
-Y = balance_data.values[:, 1]
-# print(Y)
+Y = balance_data.values[:, 0]
+print(Y)
 
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3)
-clf_entropy = DecisionTreeClassifier(max_depth=10)
+clf_entropy = DecisionTreeClassifier(max_depth=13)
 
 clf_entropy.fit(X_train, y_train)
 score = clf_entropy.score(X_test, y_test)
@@ -33,3 +33,4 @@ mt = confusion_matrix(Y, y_pred_en)
 
 print("False positive rate : %f %%" % ((mt[0][1] / float(sum(mt[0]))) * 100))
 print('False negative rate : %f %%' % ((mt[1][0] / float(sum(mt[1]))) * 100))
+

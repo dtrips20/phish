@@ -25,6 +25,7 @@ CREATE TABLE `features` (
   `shady_tld` int(11) NOT NULL DEFAULT '0',
   `is_suspicious_part_hidden` int(11) NOT NULL DEFAULT '0',
   `is_tiny_url` int(11) NOT NULL DEFAULT '0',
+  `anchor_in_url` float Not Null DEFAULT -1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 

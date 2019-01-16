@@ -19,11 +19,11 @@ items = connect_mysql.select('features', None, 'label', 'count_dots', 'count_del
                              'is_hyphen_present',
                              'count_sub_dir',
                              'count_sub_domain', 'count_queries', 'shady_tld', 'is_suspicious_part_hidden',
-                             'is_tiny_url')
+                             'is_tiny_url', 'anchor_in_url')
 
 # Getting Field Header names
 column_names = ['label', 'count_dots', 'count_delimiters', 'is_domain_ip', 'is_hyphen_present', 'count_sub_dir',
-                'count_sub_domain', 'count_queries', 'shady_tld', 'is_suspicious_part_hidden', 'is_tiny_url']
+                'count_sub_domain', 'count_queries', 'shady_tld', 'is_suspicious_part_hidden', 'is_tiny_url', 'anchor_in_url']
 
 file_name = os.path.join(os.getcwd(), file)
 fp = open(file_name, 'w')

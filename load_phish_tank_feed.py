@@ -138,5 +138,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    # parse_json_save_urls('verified_online.json')
+    # main()
+    parse_json_save_urls('verified_online.json')
+
