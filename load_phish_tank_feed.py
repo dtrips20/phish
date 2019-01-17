@@ -19,9 +19,16 @@ from mysql_connect import MysqlPython
 import datetime
 import hashlib
 import labeler
+from requests.exceptions import RequestException
+from requests import get
+
 
 api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
 url = 'https://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
+
+_headers = {
+    'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/61.0.3163.100 Safari/537.36"}
 
 
 def etag_changed():
@@ -94,12 +101,16 @@ def parse_json_save_urls(file_name):
             if prefix == 'item.url':
                 # print('prefix={}, event={}, value={}'.format(prefix, event, value))
                 m = hashlib.sha256(value.encode())
-                found, inserted = save_to_db(value, m.hexdigest())
-                total_record += 1
-                if found:
-                    record_found += 1
-                if inserted:
-                    record_inserted += 1
+                raw_html = simple_get(value)
+
+                if raw_html:
+                    html_sha256 = hashlib.sha256(raw_html)
+                    found, inserted = save_to_db(value, m.hexdigest(), raw_html, html_sha256.hexdigest())
+                    total_record += 1
+                    if found:
+                        record_found += 1
+                    if inserted:
+                        record_inserted += 1
     t1 = time.time()
     print("Total Records :", total_record)
     print("Time elapsed in sec ", t1 - t0)
@@ -107,7 +118,7 @@ def parse_json_save_urls(file_name):
     print("Record already found ", record_found)
 
 
-def save_to_db(url_value, sha256):
+def save_to_db(url_value, sha256, raw_html, html_sha256):
     found = False
     inserted = False
     conditional_query = 'sha256 = %s'
@@ -119,11 +130,54 @@ def save_to_db(url_value, sha256):
     else:
         # print("insert the values")
         connect_mysql.insert("urls", url=url_value, sha256=sha256, source='PhishTank', label=1,
-                             added_date=datetime.datetime.utcnow())
+                             added_date=datetime.datetime.utcnow(), html=raw_html, html_sha256=html_sha256)
         labeler.save_features(url_value, sha256, 1)
         inserted = True
 
     return found, inserted
+
+
+def simple_get(url_to_compute):
+
+    """
+      Attempts to get the content at `url` by making an HTTP GET request.
+      If the content-type of response is some kind of HTML/XML, return the
+      text content, otherwise return None.
+      """
+    try:
+
+        resp = get(url_to_compute, headers=_headers, stream=True, verify=False)
+        if is_good_response(resp):
+            return resp.content
+        else:
+            return None
+
+    except RequestException as e:
+        log_error('Error during requests to {0} : {1}'.format(url_to_compute, str(e)))
+        return None
+    except ConnectionError:
+        print('Web site does not exist')
+        return None
+
+
+def is_good_response(resp):
+    """
+    Returns True if the response seems to be HTML, False otherwise.
+    """
+    content_type = resp.headers['Content-Type'].lower()
+    print(resp.status_code)
+    return (resp.status_code == 200
+            and content_type is not None
+            and content_type.find('html') > -1)
+
+
+def log_error(e):
+    """
+    It is always a good idea to log errors.
+    This function just prints them, but you can
+    make it do anything.
+    """
+    print(e)
 
 
 def main():
