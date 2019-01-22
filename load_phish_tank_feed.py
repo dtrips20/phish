@@ -96,6 +96,7 @@ def parse_csv_save_urls(file_name):
     record_inserted = 0
     record_found = 0
     t0 = time.time()
+    found = False
     with open(file_name, 'r') as csv_file:
         data_reader = csv.reader(csv_file)
         next(data_reader)
@@ -109,19 +110,27 @@ def parse_csv_save_urls(file_name):
             if verified == "yes" and online == "yes":
                 count = count + 1
                 m = hashlib.sha256(phish_url.encode())
-                raw_html = simple_get(phish_url)
+                conditional_query = 'url_sha256 = %s'
+                connect_mysql = MysqlPython()
+                items = connect_mysql.select("urls", conditional_query, "id", url_sha256=m.hexdigest())
+                if items:
+                    print("Don't insert the values ", m.hexdigest())
 
-                if raw_html:
-                    extract = tldextract.extract(phish_url)
-                    html_sha256 = hashlib.sha256(str(raw_html).encode('utf-8').strip())
-                    found, inserted = save_to_db(phish_url, m.hexdigest(), raw_html, html_sha256.hexdigest(),
-                                                 extract.subdomain, extract.domain, extract.suffix,
-                                                 extract.registered_domain, target)
-                    total_record += 1
-                    if found:
-                        record_found += 1
-                    if inserted:
-                        record_inserted += 1
+                else:
+                    raw_html = simple_get(phish_url)
+
+                    if raw_html:
+                        extract = tldextract.extract(phish_url)
+                        html_sha256 = hashlib.sha256(str(raw_html).encode('utf-8').strip())
+                        inserted = save_to_db(phish_url, m.hexdigest(), raw_html, html_sha256.hexdigest(),
+                                                     extract.subdomain, extract.domain, extract.suffix,
+                                                     extract.registered_domain, target)
+                        found = True
+                        total_record += 1
+                        if found:
+                            record_found += 1
+                        if inserted:
+                            record_inserted += 1
     t1 = time.time()
     print("Total Records :", total_record)
     print("Time elapsed in sec ", t1 - t0)
@@ -130,24 +139,15 @@ def parse_csv_save_urls(file_name):
 
 
 def save_to_db(url_value, sha256, raw_html, html_sha256, subdomain, domain, suffix, registered_domain, target):
-    found = False
-    inserted = False
-    conditional_query = 'url_sha256 = %s'
     connect_mysql = MysqlPython()
-    items = connect_mysql.select("urls", conditional_query, "id", url_sha256=sha256)
-    if items:
-        print("Don't insert the values ", sha256)
-        found = True
-    else:
-        # print("insert the values")
-        connect_mysql.insert("urls", url=url_value, url_sha256=sha256, source='PhishTank', label=1,
-                             added_date=datetime.datetime.utcnow(), html=str(raw_html).strip(), html_sha256=html_sha256
-                             , sub_domain=subdomain, domain=domain, suffix=suffix, registered_domain=registered_domain,
-                             target=target)
-        # labeler.save_features(url_value, sha256, 1)
-        inserted = True
+    connect_mysql.insert("urls", url=url_value, url_sha256=sha256, source='PhishTank', label=1,
+                         added_date=datetime.datetime.utcnow(), html=str(raw_html).strip(), html_sha256=html_sha256
+                         , sub_domain=subdomain, domain=domain, suffix=suffix, registered_domain=registered_domain,
+                         target=target)
+    # labeler.save_features(url_value, sha256, 1)
+    inserted = True
 
-    return found, inserted
+    return inserted
 
 
 def simple_get(url_to_compute):
@@ -204,5 +204,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    #parse_csv_save_urls('verified_online.csv')
+    #main()
+    parse_csv_save_urls('verified_online.csv')
