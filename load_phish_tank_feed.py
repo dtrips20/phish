@@ -6,25 +6,26 @@ Created on Sat Dec 15 21:00:42 2018
 Load PhishTank feed in DB.
 
 """
+
 # TODO:'Write the ETag changes after the update in DB is complete so that we can run the prog again incase of failure.'
-import os
-import time
-import feedparser
-import ijson
-import requests
-import urllib.request
-import shutil
 import bz2
-from mysql_connect import MysqlPython
+import csv
 import datetime
 import hashlib
-import labeler
-from requests.exceptions import RequestException
+import os
+import shutil
+import time
+import urllib.request
+import feedparser
+import requests
+import tldextract
 from requests import get
+from requests.exceptions import RequestException
 
+from mysql_connect import MysqlPython
 
 api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
-url = 'https://data.phishtank.com/data/{0}/online-valid.json.bz2'.format(api_key)
+url = 'https://data.phishtank.com/data/{0}/online-valid.csv.bz2'.format(api_key)
 
 _headers = {
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -90,22 +91,32 @@ def download_bz_file_and_decompress(cloud_url):
     return new_file_path
 
 
-def parse_json_save_urls(file_name):
+def parse_csv_save_urls(file_name):
     total_record = 0
     record_inserted = 0
     record_found = 0
     t0 = time.time()
-    with open(file_name, 'r') as f:
-        parse = ijson.parse(f)
-        for prefix, event, value in parse:
-            if prefix == 'item.url':
-                # print('prefix={}, event={}, value={}'.format(prefix, event, value))
-                m = hashlib.sha256(value.encode())
-                raw_html = simple_get(value)
+    with open(file_name, 'r') as csv_file:
+        data_reader = csv.reader(csv_file)
+        next(data_reader)
+        count = 0
+        for row in data_reader:
+            phish_url = row[1]
+            verified = row[4]
+            online = row[6]
+            target = row[7]
+
+            if verified == "yes" and online == "yes":
+                count = count + 1
+                m = hashlib.sha256(phish_url.encode())
+                raw_html = simple_get(phish_url)
 
                 if raw_html:
+                    extract = tldextract.extract(phish_url)
                     html_sha256 = hashlib.sha256(str(raw_html).encode('utf-8').strip())
-                    found, inserted = save_to_db(value, m.hexdigest(), raw_html, html_sha256.hexdigest())
+                    found, inserted = save_to_db(phish_url, m.hexdigest(), raw_html, html_sha256.hexdigest(),
+                                                 extract.subdomain, extract.domain, extract.suffix,
+                                                 extract.registered_domain, target)
                     total_record += 1
                     if found:
                         record_found += 1
@@ -118,19 +129,21 @@ def parse_json_save_urls(file_name):
     print("Record already found ", record_found)
 
 
-def save_to_db(url_value, sha256, raw_html, html_sha256):
+def save_to_db(url_value, sha256, raw_html, html_sha256, subdomain, domain, suffix, registered_domain, target):
     found = False
     inserted = False
-    conditional_query = 'sha256 = %s'
+    conditional_query = 'url_sha256 = %s'
     connect_mysql = MysqlPython()
-    items = connect_mysql.select("urls", conditional_query, "id", sha256=sha256)
+    items = connect_mysql.select("urls", conditional_query, "id", url_sha256=sha256)
     if items:
         print("Don't insert the values ", sha256)
         found = True
     else:
         # print("insert the values")
-        connect_mysql.insert("urls", url=url_value, sha256=sha256, source='PhishTank', label=1,
-                             added_date=datetime.datetime.utcnow(), html=str(raw_html).strip(), html_sha256=html_sha256)
+        connect_mysql.insert("urls", url=url_value, url_sha256=sha256, source='PhishTank', label=1,
+                             added_date=datetime.datetime.utcnow(), html=str(raw_html).strip(), html_sha256=html_sha256
+                             , sub_domain=subdomain, domain=domain, suffix=suffix, registered_domain=registered_domain,
+                             target=target)
         # labeler.save_features(url_value, sha256, 1)
         inserted = True
 
@@ -138,7 +151,6 @@ def save_to_db(url_value, sha256, raw_html, html_sha256):
 
 
 def simple_get(url_to_compute):
-
     """
       Attempts to get the content at `url` by making an HTTP GET request.
       If the content-type of response is some kind of HTML/XML, return the
@@ -186,12 +198,11 @@ def main():
     if etag_has_changed:
         print("ETag has changed")
         new_file = download_bz_file_and_decompress(cloud_url_loc)
-        parse_json_save_urls(new_file)
+        parse_csv_save_urls(new_file)
     else:
         print("Dont parse the json as ETag has not changed")
 
 
 if __name__ == '__main__':
-    # main()
-    parse_json_save_urls('verified_online.json')
-
+    main()
+    #parse_csv_save_urls('verified_online.csv')

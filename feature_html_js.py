@@ -122,5 +122,5 @@ class Feature:
             return -1
 
 
-f = Feature("https://www.all-today.com")
-print(f.anchor_in_url())
+#f = Feature("https://www.all-today.com")
+#print(f.anchor_in_url())
