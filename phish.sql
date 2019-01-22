@@ -4,14 +4,23 @@ use phish;
 CREATE TABLE `urls` (
 	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
 	`url` TEXT NOT NULL,
-	`sha256` CHAR(64) NOT NULL,
+	`url_sha256` CHAR(64) NOT NULL,
 	`source` CHAR(200) NOT NULL,
 	`label` INT(11) NOT NULL,
 	`added_date` DATETIME NOT NULL,
-	`html` TEXT NOT NULL,
+	`sub_domain` CHAR(255) NOT NULL,
+	`domain` CHAR(255) NOT NULL,
+	`suffix` CHAR(64) NOT NULL,
+	`registered_domain` CHAR(255) NOT NULL,
+	`target` CHAR(100) NULL DEFAULT NULL,
 	`html_sha256` CHAR(64) NOT NULL,
-   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+	`html` LONGTEXT NOT NULL,
+	PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4'
+ENGINE=InnoDB
+;
+
 
 CREATE TABLE `features` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
