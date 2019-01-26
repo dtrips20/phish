@@ -22,14 +22,16 @@ import tldextract
 import logging
 from config import read_phishtank_feed_config
 from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 
 from export_csv import file_name
 from mysql_connect import MysqlPython
 
-fh = RotatingFileHandler(filename="PhishTankFeed", maxBytes=512000, backupCount=20)
+fh = TimedRotatingFileHandler(filename="logs/PhishTankFeed", interval=1, when='M',  backupCount=20)
+fh.suffix= '%Y_%m_%d.log'
+
 
 logger = logging.getLogger("PhisTank feed log")
-
 logger.addHandler(fh)
 logger.setLevel(logging.INFO)
 
@@ -173,5 +175,5 @@ if __name__ == '__main__':
     logger.info("Phish tank feed started")
     print(api_key)
     print(url)
-    main()
+    #main()
     # parse_csv_save_urls('verified_online.csv')
