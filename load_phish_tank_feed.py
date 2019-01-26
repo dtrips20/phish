@@ -19,13 +19,23 @@ import urllib.request
 import feedparser
 import requests
 import tldextract
-from requests import get
-from requests.exceptions import RequestException
+import logging
+from config import read_phishtank_feed_config
+from logging.handlers import RotatingFileHandler
 
+from export_csv import file_name
 from mysql_connect import MysqlPython
 
-api_key = "9bfbd8e16dd87bda0a598ee964db349bdace48fc70b126e3362a3c581bbb1aeb"
-url = 'https://data.phishtank.com/data/{0}/online-valid.csv.bz2'.format(api_key)
+fh = RotatingFileHandler(filename="PhishTankFeed", maxBytes=512000, backupCount=20)
+
+logger = logging.getLogger("PhisTank feed log")
+
+logger.addHandler(fh)
+logger.setLevel(logging.INFO)
+
+
+api_key , url =  read_phishtank_feed_config()
+url = url.format(api_key)
 
 _headers = {
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -37,6 +47,7 @@ def etag_changed():
 
     if not os.path.exists(file_name):
         print('File does not exits so create a new file')
+
         open(file_name, 'a').close()
 
     if os.path.getsize(file_name) > 0:
@@ -96,12 +107,15 @@ def parse_csv_save_urls(file_name):
     record_inserted = 0
     record_found = 0
     t0 = time.time()
-    found = False
+
     with open(file_name, 'r') as csv_file:
         data_reader = csv.reader(csv_file)
         next(data_reader)
         count = 0
         for row in data_reader:
+
+            total_record += 1
+
             phish_url = row[1]
             verified = row[4]
             online = row[6]
@@ -113,24 +127,19 @@ def parse_csv_save_urls(file_name):
                 conditional_query = 'url_sha256 = %s'
                 connect_mysql = MysqlPython()
                 items = connect_mysql.select("urls", conditional_query, "id", url_sha256=m.hexdigest())
+
                 if items:
                     print("Don't insert the values ", m.hexdigest())
+                    record_found += 1
 
                 else:
-                    raw_html = simple_get(phish_url)
+                    extract = tldextract.extract(phish_url)
+                    inserted = save_to_db(phish_url, m.hexdigest(),
+                                          extract.subdomain, extract.domain, extract.suffix,
+                                          extract.registered_domain, target)
+                    if inserted:
+                        record_inserted += 1
 
-                    if raw_html:
-                        extract = tldextract.extract(phish_url)
-                        html_sha256 = hashlib.sha256(str(raw_html).encode('utf-8').strip())
-                        inserted = save_to_db(phish_url, m.hexdigest(), raw_html, html_sha256.hexdigest(),
-                                                     extract.subdomain, extract.domain, extract.suffix,
-                                                     extract.registered_domain, target)
-                        found = True
-                        total_record += 1
-                        if found:
-                            record_found += 1
-                        if inserted:
-                            record_inserted += 1
     t1 = time.time()
     print("Total Records :", total_record)
     print("Time elapsed in sec ", t1 - t0)
@@ -138,58 +147,15 @@ def parse_csv_save_urls(file_name):
     print("Record already found ", record_found)
 
 
-def save_to_db(url_value, sha256, raw_html, html_sha256, subdomain, domain, suffix, registered_domain, target):
+def save_to_db(url_value, sha256, subdomain, domain, suffix, registered_domain, target):
     connect_mysql = MysqlPython()
     connect_mysql.insert("urls", url=url_value, url_sha256=sha256, source='PhishTank', label=1,
-                         added_date=datetime.datetime.utcnow(), html=str(raw_html).strip(), html_sha256=html_sha256
+                         added_date=datetime.datetime.utcnow()
                          , sub_domain=subdomain, domain=domain, suffix=suffix, registered_domain=registered_domain,
                          target=target)
-    # labeler.save_features(url_value, sha256, 1)
     inserted = True
 
     return inserted
-
-
-def simple_get(url_to_compute):
-    """
-      Attempts to get the content at `url` by making an HTTP GET request.
-      If the content-type of response is some kind of HTML/XML, return the
-      text content, otherwise return None.
-      """
-    try:
-
-        resp = get(url_to_compute, headers=_headers, stream=True, verify=False)
-        if is_good_response(resp):
-            return resp.content
-        else:
-            return None
-
-    except RequestException as e:
-        log_error('Error during requests to {0} : {1}'.format(url_to_compute, str(e)))
-        return None
-    except ConnectionError:
-        print('Web site does not exist')
-        return None
-
-
-def is_good_response(resp):
-    """
-    Returns True if the response seems to be HTML, False otherwise.
-    """
-    content_type = resp.headers['Content-Type'].lower()
-    print(resp.status_code)
-    return (resp.status_code == 200
-            and content_type is not None
-            and content_type.find('html') > -1)
-
-
-def log_error(e):
-    """
-    It is always a good idea to log errors.
-    This function just prints them, but you can
-    make it do anything.
-    """
-    print(e)
 
 
 def main():
@@ -204,5 +170,8 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
-    parse_csv_save_urls('verified_online.csv')
+    logger.info("Phish tank feed started")
+    print(api_key)
+    print(url)
+    main()
+    # parse_csv_save_urls('verified_online.csv')

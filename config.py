@@ -71,7 +71,25 @@ def read_shorten_url_services_config(section="list.of.shorten.url.services"):
         raise Exception('{0} not found in the {1} file'.format(section, filename))
         
     return shorten_url_services
-    
-        
-#if __name__ == '__main__':
-    #print(read_shorten_url_services_config())
+
+
+def read_phishtank_feed_config(section="phishtank_feed"):
+
+    parser = ConfigParser()
+    parser.read(filename)
+
+    api_key = ""
+    api_url = ""
+
+    if parser.has_section(section):
+        api_key=parser[section]['api_key']
+        api_url=parser[section]['api_url']
+
+
+    return api_key,api_url
+
+
+if __name__ == '__main__':
+    api_key , api_url = read_phishtank_feed_config()
+    print(api_key)
+    print(api_url)

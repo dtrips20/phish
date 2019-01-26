@@ -1,5 +1,8 @@
 use phish;
 
+drop table urls;
+drop table features;
+drop table url_html;
 
 CREATE TABLE `urls` (
 	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
@@ -13,11 +16,10 @@ CREATE TABLE `urls` (
 	`suffix` CHAR(64) NOT NULL,
 	`registered_domain` CHAR(255) NOT NULL,
 	`target` CHAR(100) NULL DEFAULT NULL,
-	`html_sha256` CHAR(64) NOT NULL,
-	`html` LONGTEXT NOT NULL,
+
 	PRIMARY KEY (`id`)
 )
-COLLATE='utf8mb4'
+
 ENGINE=InnoDB
 ;
 
@@ -40,4 +42,15 @@ CREATE TABLE `features` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
+CREATE TABLE `url_html`(
+  `id` bigint (20) not null auto_increment,
+  `url` text not null,
+  `url_sha256` CHAR(64) NOT NULL,
+  `res_code` int,
+	`html_sha256` CHAR(64) NOT NULL,
+	`html` LONGTEXT NOT NULL,
 
+	primary key (`id`)
+
+)
+ENGINE=InnoDB;
