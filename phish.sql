@@ -20,8 +20,7 @@ CREATE TABLE `urls` (
 	PRIMARY KEY (`id`)
 )
 
-ENGINE=InnoDB
-;
+ENGINE=InnoDB;
 
 
 CREATE TABLE `features` (
