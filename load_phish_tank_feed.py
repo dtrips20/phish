@@ -23,6 +23,7 @@ from config import read_phishtank_feed_config
 from logging.handlers import TimedRotatingFileHandler
 from mysql_connect import MysqlPython
 
+
 logger = logging.getLogger("PhisTank feed log")
 logger.setLevel(logging.INFO)
 
@@ -166,3 +167,4 @@ if __name__ == '__main__':
     main()
     # parse_csv_save_urls('verified_online.csv')
     logger.info("Phish tank feed ended")
+
