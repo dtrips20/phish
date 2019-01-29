@@ -100,8 +100,6 @@ def parse_csv_save_urls(file_name):
                         record_inserted += 1
                         logger.info("Added {0} URL {1}".format(record_inserted, m.hexdigest()))
 
-
-
     t1 = time.time()
     logger.info("Total Records :{0}".format(total_record))
     logger.info("Time elapsed in sec {0}".format(t1 - t0))
