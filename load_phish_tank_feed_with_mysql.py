@@ -33,10 +33,13 @@ import logging
 from config import read_phishtank_feed_config
 from logging.handlers import TimedRotatingFileHandler
 import mysql.connector
+from config import read_db_config
 
 
 
+db_config = read_db_config()
 
+print(db_config)
 logger = logging.getLogger("PhisTank feed log")
 logger.setLevel(logging.INFO)
 
@@ -97,23 +100,17 @@ def parse_csv_save_urls(file_name):
             if verified == "yes" and online == "yes":
                 count = count + 1
                 m = hashlib.sha256(phish_url.encode())
-                cnx = mysql.connector.connect(host="192.168.1.4", user="root", password="Dell@123", database="phish")
+                cnx = mysql.connector.connect(**db_config)
                 cursor = cnx.cursor()
                 query = ("select id from urls where url_sha256='{0}'".format(m.hexdigest()))
-                print(query)
                 cursor.execute(query)
-
-                for id in cursor:
-                    print(id)
-
+                item = cursor.fetchall()
                 cursor.close()
                 cnx.close()
 
 
-'''
-
-                if items:
-                    # logger.warning("Don't insert the values {0}".format(m.hexdigest()))
+                if item:
+                    print("Don't insert the values {0}".format(m.hexdigest()))
                     record_found += 1
 
                 else:
@@ -123,21 +120,28 @@ def parse_csv_save_urls(file_name):
                                           extract.registered_domain, target)
                     if inserted:
                         record_inserted += 1
-                        logger.info("Added {0} URL {1}".format(record_inserted, m.hexdigest()))
+                        print("Added {0} URL {1}".format(record_inserted, m.hexdigest()))
 
     t1 = time.time()
     logger.info("Total Records :{0}".format(total_record))
     logger.info("Time elapsed in sec {0}".format(t1 - t0))
     logger.info("Record Inserted {0}".format(record_inserted))
     logger.info("Record already found {0}".format(record_found))
-'''
+
 
 def save_to_db(url_value, sha256, sub_domain, domain, suffix, registered_domain, target):
-    connect_mysql = MysqlPython()
-    connect_mysql.insert("urls", url=url_value, url_sha256=sha256, source='PhishTank', label=1,
-                         added_date=datetime.datetime.utcnow()
-                         , sub_domain=sub_domain, domain=domain, suffix=suffix, registered_domain=registered_domain,
-                         target=target)
+    cnx = mysql.connector.connect(**db_config)
+    cursor = cnx.cursor()
+    add_url = ("insert into urls "
+               "(url, url_sha256, source, label,added_date, sub_domain, domain, suffix, registered_domain, target)"
+               "values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
+
+    data_url = (url_value, sha256,'PhishTank', '1', datetime.datetime.now(), sub_domain, domain, suffix, registered_domain, target)
+
+    cursor.execute(add_url,data_url)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
     inserted = True
 
     return inserted
@@ -188,6 +192,6 @@ if __name__ == '__main__':
     logger.info("Phish tank feed started")
     logger.info("PhishTank API key is :{0}".format(api_key))
     logger.info("PhishTank URL {0}".format(url))
-    main()
-    # parse_csv_save_urls('verified_online.csv')
+    #main()
+    parse_csv_save_urls('verified_online.csv')
     logger.info("Phish tank feed ended")

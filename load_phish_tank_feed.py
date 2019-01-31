@@ -7,6 +7,17 @@ Load PhishTank feed in DB.
 
 """
 
+#  Copyright (c) 2019. [Deepak Tripathi]
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+
 import bz2
 import csv
 import datetime
@@ -21,7 +32,11 @@ import tldextract
 import logging
 from config import read_phishtank_feed_config
 from logging.handlers import TimedRotatingFileHandler
-from mysql_connect import MysqlPython
+import mysql.connector
+from config import read_db_config
+
+
+db_config = read_db_config()
 
 logger = logging.getLogger("PhisTank feed log")
 logger.setLevel(logging.INFO)
@@ -83,12 +98,16 @@ def parse_csv_save_urls(file_name):
             if verified == "yes" and online == "yes":
                 count = count + 1
                 m = hashlib.sha256(phish_url.encode())
-                conditional_query = 'url_sha256 = %s'
-                connect_mysql = MysqlPython()
-                items = connect_mysql.select("urls", conditional_query, "id", url_sha256=m.hexdigest())
+                cnx = mysql.connector.connect(**db_config)
+                cursor = cnx.cursor()
+                query = ("select id from urls where url_sha256='{0}'".format(m.hexdigest()))
+                cursor.execute(query)
+                item = cursor.fetchall()
+                cursor.close()
+                cnx.close()
 
-                if items:
-                    # logger.warning("Don't insert the values {0}".format(m.hexdigest()))
+                if item:
+                    # print("Don't insert the values {0}".format(m.hexdigest()))
                     record_found += 1
 
                 else:
@@ -108,11 +127,18 @@ def parse_csv_save_urls(file_name):
 
 
 def save_to_db(url_value, sha256, sub_domain, domain, suffix, registered_domain, target):
-    connect_mysql = MysqlPython()
-    connect_mysql.insert("urls", url=url_value, url_sha256=sha256, source='PhishTank', label=1,
-                         added_date=datetime.datetime.utcnow()
-                         , sub_domain=sub_domain, domain=domain, suffix=suffix, registered_domain=registered_domain,
-                         target=target)
+    cnx = mysql.connector.connect(**db_config)
+    cursor = cnx.cursor()
+    add_url = ("insert into urls "
+               "(url, url_sha256, source, label,added_date, sub_domain, domain, suffix, registered_domain, target)"
+               "values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
+
+    data_url = (url_value, sha256,'PhishTank', '1', datetime.datetime.now(), sub_domain, domain, suffix, registered_domain, target)
+
+    cursor.execute(add_url,data_url)
+    cnx.commit()
+    cursor.close()
+    cnx.close()
     inserted = True
 
     return inserted
@@ -151,7 +177,7 @@ def main():
                 f.write(etag)
                 f.close()
     else:
-        print('file size is not greater than 0')
+        logger.info('file size is not greater than 0')
         d2 = feedparser.parse(url)
         print(d2.etag)
         f = open(file_name, 'w+')
@@ -164,5 +190,5 @@ if __name__ == '__main__':
     logger.info("PhishTank API key is :{0}".format(api_key))
     logger.info("PhishTank URL {0}".format(url))
     main()
-    # parse_csv_save_urls('verified_online.csv')
+    #parse_csv_save_urls('verified_online.csv')
     logger.info("Phish tank feed ended")
