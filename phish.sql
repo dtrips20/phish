@@ -19,7 +19,7 @@ CREATE TABLE `urls` (
 
 	PRIMARY KEY (`id`)
 )
-
+COLLATE='utf8mb4_unicode_ci'
 ENGINE=InnoDB;
 
 
@@ -39,7 +39,9 @@ CREATE TABLE `features` (
   `is_tiny_url` int(11) NOT NULL DEFAULT '0',
   `anchor_in_url` float Not Null DEFAULT -1,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB  ;
 
 CREATE TABLE `url_html`(
   `id` bigint (20) not null auto_increment,
@@ -52,4 +54,5 @@ CREATE TABLE `url_html`(
 	primary key (`id`)
 
 )
+COLLATE='utf8mb4_unicode_ci'
 ENGINE=InnoDB;
